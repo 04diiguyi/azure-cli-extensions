@@ -104,6 +104,36 @@ class QuantumWorkspacesScenarioTest(ScenarioTest):
                 self.check("provisioningState", "Accepted")  # Status is accepted since we're not linking the storage account.
             ])
 
+            # List api keys
+            self.cmd(f'az quantum workspace keys list -o json', checks=[
+                self.check("apiKeyEnabled", True)
+            ])
+
+            # Regenerate primary key
+            self.cmd(f'az quantum workspace keys regenerate --key-type Primary -o json', checks=[
+                self.is_empty()
+            ])
+
+            # Regenerate secondary key
+            self.cmd(f'az quantum workspace keys regenerate --key-type Secondary -o json', checks=[
+                self.is_empty()
+            ])
+
+            # Regenerate primary key and secondary key
+            self.cmd(f'az quantum workspace keys regenerate --key-type Primary,Secondary -o json', checks=[
+                self.is_empty()
+            ])
+
+            # Enable api keys
+            self.cmd(f'az quantum workspace update --enable-api-key true -o json', checks=[
+                self.check("properties.apiKeyEnabled", True)
+            ])
+
+            # Disable api keys
+            self.cmd(f'az quantum workspace update --enable-api-key false -o json', checks=[
+                self.check("properties.apiKeyEnabled", False)
+            ])            
+
             # delete
             self.cmd(f'az quantum workspace delete -g {test_resource_group} -w {test_workspace_temp} -o json', checks=[
                 self.check("name", test_workspace_temp),
